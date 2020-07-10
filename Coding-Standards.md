@@ -1,5 +1,4 @@
-Coding Standards Guide
- 
+Development Guide
 
 1\. Naming Conventions
 
@@ -49,9 +48,35 @@ Do not create a class with method names that differ only by case. E.g.:
 
  
 
-<u>1.4 Naming Motivation</u>
+<u>1.4 Meaningful Names - Recording Intention</u>
 
-When naming an identifier the name should be descriptive and
+Member and variable names should be carefully chosen to convey as much information as possible about their function and usage.
+
+-   Do use vague descriptive nouns and verbs that record what action will be taken by functions and methods and what data they act upon. E.g.: calculateAverages, createCustomer, clearTotalFields.
+
+-   Do not use names that simply describe the structure of that data rather than its purpose. E.g.: kvDict, dictionary, integerList
+
+-   Do not use variable names with a ‘the’ prefix. E.g.: theCustomer
+
+-   Avoid using numbers in names unless, rather describe how a set of variables differ.
+
+ 
+
+When two or more variables of the same type are in use in the same general area, make sure they are named in a way that differentiates them in an informative way.
+
+Bad Practice:
+
+<table><tbody><tr class="odd"><td><p>customer1.Save();</p><p>customer2.Save();</p></td></tr></tbody></table>
+
+ 
+
+Good Practice:
+
+<table><tbody><tr class="odd"><td><p>oldCustomer.Save();</p><p>newCustomer.Save();</p></td></tr></tbody></table>
+
+ 
+
+When naming an identifier the name should be descriptive yet concise. Each identifier should have a name that tells the reader exactly what the identifier is or does. Avoid vague names that are single characters or include numbers.
 
  
 
@@ -205,7 +230,255 @@ Use vertical white space to separate and group code into blocks of similar funct
 
 -   In general, use vertical whitespace to divide code into logical grouping of similar functionality. This allows developers or reviewers to quickly scan and understand the code
 
+-   Do not add blank lines between multiple close braces that terminate nested code blocks.
+
  
+
+3 Coding Standards and Practices
+
+<u>3.1 Standard Class Structure </u>
+
+The members of a class should be organized according to a standard template in this order:
+
+-   Private class-scoped member variables
+
+-   Constructors
+
+-   Public properties
+
+-   Public methods
+
+-   Private methods
+
+-   Simple interface implementations, such as IComparable, etc.
+
+ 
+
+The exception to this rule is when an interface implementation makes up the bulk of a class—for instance in repository implementations. In that case, the interface implementation does not need to be separated out.
+
+ 
+
+<u>3.2 Null-Conditional Operator </u>
+
+Use the null-conditional operator to protect against null values:
+
+<table><tbody><tr class="odd"><td><p>// This will ensure an exception is not thrown if location is null, and</p><p>// will set instead set locationName to null</p><p>string locationName = locationName?.Name;</p></td></tr></tbody></table>
+
+ 
+
+However, use this operator carefully. It should only be used when the resulting value is allowed to be null. For instance, if location is null, it is actually better to throw a null reference exception when the location variable is accessed than further down the code path when the locationName variable is used:
+
+<table><tbody><tr class="odd"><td><p>string locationName = myLocation?.Name;</p><p>..</p><p>// This code might be several thousand lines away and will cause a null // reference exception if the original customer object was null</p><p>String trimmedName = locationName.Trim();</p></td></tr></tbody></table>
+
+ 
+
+ 
+
+<u>3.3 Use of Braces on If Structures</u>
+
+If statements should always use braces, even if there is only a single statement that results from
+
+the condition evaluating to true.
+
+ 
+
+Bad Practice:
+
+<table><tbody><tr class="odd"><td><p>if (tmpCustomer.IsNew) tmpCustomer.Save();</p><p>if (tmpCustomer.IsNew)</p><p>tmpCustomer.Save();</p></td></tr></tbody></table>
+
+ 
+
+Good Practice:
+
+<table><tbody><tr class="odd"><td><p>if (tmpCustomer.IsNew)</p><p>{</p><p>tmpCustomer.Save();</p><p>}</p></td></tr></tbody></table>
+
+ 
+
+The exception to this rule is when an obvious shortcut can be taken to return from a method. There should be a single line of whitespace before and after that line:
+
+<table><tbody><tr class="odd"><td>if (tmpCustomer.IsNew) return;</td></tr></tbody></table>
+
+ 
+
+<u>3.4 Line Wrapping</u>
+
+Break up lines of code that are more than 120 characters in length and indent all subsequent lines that are part of the same statement.
+
+ 
+
+Try to find a logical place in the line to place the break. Usually the best place is after an operator. Leave the operator trailing at the end of the wrapped line (as opposed to starting the next line) to give an immediate visual cue that the statement continues on the following line.
+
+ 
+
+Example:
+
+<table><tbody><tr class="odd"><td><p>Console.WriteLine("Customer " + customer.Name + " has a balance of " +</p><p>customer.Balance.Dollars + " dollars and " +</p><p>customer.Balance.Cents + " cents.");</p></td></tr></tbody></table>
+
+ 
+
+After a comma in a method declaration:
+
+<table><tbody><tr class="odd"><td><p>private int getInternal(IParticipantReadContext readContext,</p><p>ReadSpecification querySpec, Plan referencePlan)</p></td></tr></tbody></table>
+
+ 
+
+Before a member accessor:
+
+<table><tbody><tr class="odd"><td><p>string customerName = customers[myCustomerNumber].PersonalInfo</p><p>.NameInfo.FirstName.Trim()</p></td></tr></tbody></table>
+
+ 
+
+3.5 Using Parentheses
+
+Use parentheses defensively. to make operator order obvious and to clarify the intent of a calculation.
+
+ 
+
+<table><tbody><tr class="odd"><td><p>// Both of these lines produce the same result, but the second line is more explicit</p><p>if (foo == 3 * 7 + 4 &amp;&amp; bar != 0)</p><p> </p><p>if ((foo == ((3 * 7) + 4)) &amp;&amp; (bar!= 0))</p></td></tr></tbody></table>
+
+ 
+
+<u>3.6 Variable Definitions</u>
+
+Variables should be defined as close as possible to their actual usage– avoid a large block of definitions at the top of a class or method.
+
+ 
+
+<u>3.7 Exception Handling</u>
+
+Exceptions should only be thrown in *exceptional* circumstances. Don’t use an exception to return feedback to calling code about the normal operation of method. An exception should only be thrown if a method is unable to complete its work – the exception then indicates that processing failed completely.
+
+ 
+
+The basic rule of exception handling is, generally speaking, don’t handle exceptions. Exceptions should only be caught in the following circumstances:
+
+-   The code can actually do something to correct the problem. For instance, a timeout exception can be handled by retrying an operation.
+
+-   The exception must be hidden because it may contain sensitive information that should not be shared with a caller. For instance, a web service should not return detailed information about the database error that caused an operation to fail
+
+-   The exception has a different meaning outside of the library of class where it occurred. For instance a primary key violation in database code might indicate that a caller is attempting to add an entity that already exists in the database
+
+ 
+
+<u>3.8 Property Guidelines</u>
+
+Use a method instead of a property when:
+
+-   The operation is a conversion (such as Object.ToString()) as the complexities can quickly add up and clear organization is key for future readers
+
+-   Obtaining a property value using the Get accessor on an object modifies the state of the object
+
+-   Calling the member twice in succession results in different results
+
+ 
+
+Use a property getter for quick retrievals that do not involve complex side effects. For instance,
+
+code to retrieve the next N bytes from a stream should be accessed through a method because it
+
+has an observable side effect (i.e.: the position of the reader in the stream is updated).
+
+ 
+
+<u>3.9 Constructors</u>
+
+Some rules for constructors:
+
+ 
+
+-   If a class should not be publicly creatable, specify a private default constructor
+
+    -   By default, all classes should have private or internal constructors. Only classes that are explicitly intended for use outside the assembly should have public constructors and public visibility
+
+-   Make proper use of protected and internal constructors
+
+    -   Use an internal constructor when a caller outside the assembly should not be able to create a new instance of a class.
+
+    -   Use a protected constructor when only derived classes should be able to create an instance of the base class
+
+    -   Generally, a constructor should contain parameters that setup the class in a valid state. For instance, if a Customer class is invalid without an Address object, the constructor must contain an Address parameter (these are referred to as the invariants of the class).
+
+>  
+>
+> An exception to this rule is for when a constructor can setup default state that makes the class valid. For instance, a Point2d class might take X and Y coordinates as arguments in its constructor, but a default parameter-less constructor could just set these values to 0 by default.
+
+-   For classes with overloaded constructors, be consistent with the argument order
+
+ 
+
+<u>3.10 Returning Arrays and Collections</u>
+
+Members that return arrays or collections should (generally) never return null. Always prefer to return an empty collection or zero-length array, unless a null result has some special significance.
+
+ 
+
+<u>3.11 Code for Clarity, Not Compactness</u>
+
+Developers should place an emphasis on readability. Code should be readable and should favor clarity over compactness. Avoid excessive use of syntactical ‘tricks’ or short-hand.
+
+ 
+
+While useful, Bad Practice:
+
+<table><tbody><tr class="odd"><td>int nValue = (User != null) ? ((User.Active) ? User.Value1 : User.Value2) : 0;</td></tr></tbody></table>
+
+ 
+
+Good Practice:
+
+<table><tbody><tr class="odd"><td><p>int nValue = 0;</p><p>if (User != null)</p><p>{</p><blockquote><p>if (true == User.Active)</p><p>{</p><p>nValue = User.Value1;</p><p>}</p><p>else</p><p>{</p><p>nValue = User.Value2;</p><p>}</p></blockquote><p>}</p><p> </p><p>// Or a reasonable common ground between readability and compactness:</p><p>if (User != null)</p><p>{</p><blockquote><p>nValue = User.Active ? User.Value1 : User.Value2;</p></blockquote><p>}</p></td></tr></tbody></table>
+
+ 
+
+<u>3.12 Avoid Excessive Vertical Whitespace</u>
+
+Although these style guidelines make frequent recommendations to use vertical whitespace, two
+
+blank lines should never appear consecutively in a source file.
+
+ 
+
+<u>3.13 Using Regions</u>
+
+Use code outlining to group the code in your source file in logical units that can be collapsed or
+
+expanded to improve readability.
+
+ 
+
+Examples of good units for grouping include:
+
+-   Private ‘utility’ functions
+
+-   Interface implementations
+
+-   Generated code
+
+ 
+
+When possible, group members by business function. For example:
+
+-   Reading and writing data
+
+-   Validation logic
+
+Do not use outline regions to group code by visibility or scope, such as private methods, public methods, constructors, etc.
+
+ 
+
+Structure your outlined regions so that, when closed, they are separated by a single blank line:
+
+{Insert code snippet}
+
+ 
+
+<u>3.15 Removing Unused Code</u>
+
+Unreachable or unused code should be removed, unless there is a clear requirement for it to be
+
+used in the near future. Do not comment out large blocks of code when they are no longer
+
+required—instead, delete the unused code.
 
  
 
@@ -227,10 +500,6 @@ methods (and classes) should do ONE thing. Generally, try to avoid:
 
  
 
- 
-
- 
-
 <u>X.X Notable Pitfalls</u>
 
 Avoid the following pitfalls when coding:
@@ -239,7 +508,7 @@ Avoid the following pitfalls when coding:
 
 -   Avoid unnecessary code (using statements, functions, comments that state the obvious)
 
--   Avoid complicated code (prefer understandable to cleer code -- ex., foreach instead of a complex Linq statement)
+-   Avoid complicated code (prefer understandable to clear code -- ex., foreach instead of a complex LINQ statement)
 
 -   Avoid if/else if/else/switch if at all possible (consider dictionaries unless they make code harder to understand)
 
