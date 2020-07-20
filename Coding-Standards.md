@@ -18,12 +18,12 @@ Use the following three conventions for capitalizing identifiers.
 ### 1.2 Capitalization Rules
 
 | Identifier                   | Case   | Rules                                                                                                                                                                                                                                                                                                                                                | Example                                                       |
-|------------------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
+| ---------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | Attribute                    | Pascal | Add the suffix Attribute to custom attribute classes                                                                                                                                                                                                                                                                                                 | ObsoleteAttribute{}                                           |
 | Arrays                       | Pascal | For variables that hold a reference to an array, list or other collection, use a plural noun                                                                                                                                                                                                                                                         | Customers, financialRecords.                                  |
 | Backend API                  | Pascal | Use the pattern Execution.[Functionality].Api                                                                                                                                                                                                                                                                                                        | Execution.Shipment.Api,Execution.ShipmentTracking.Api         |
 | Class                        | Pascal | Use a noun or noun phrase to name a class Where appropriate, use a compound word to name a derived class. The second part of the derived class's name should be the name of the base class. E.g.: ApplicationException is an appropriate name for a class derived from a class named Exception, because ApplicationException is a kind of Exception. | AppDomain                                                     |
-| Class-scoped variable        | Camel  | Note: always use an underscore **(_)** prefix for class-scoped variables                                                                                                                                                                                                                                                                             | _someVariable                                                 |
+| Class-scoped variable        | Camel  |                                                                                                                                                                                                                                                                                                                                                      | _someVariable                                                 |
 | Enum type                    | Pascal |                                                                                                                                                                                                                                                                                                                                                      | ErrorLevelEnum                                                |
 | Enum values                  | Pascal |                                                                                                                                                                                                                                                                                                                                                      | FatalError                                                    |
 | Event                        | Pascal |                                                                                                                                                                                                                                                                                                                                                      | ValueChange                                                   |
@@ -31,13 +31,14 @@ Use the following three conventions for capitalizing identifiers.
 | Function or method parameter | Camel  | Use descriptive parameter names. Parameter names should be descriptive enough that the name of the parameter and its type can be used to determine its meaning in most scenarios.                                                                                                                                                                    | typeName                                                      |
 | Gateway API                  | Pascal | Use the pattern [UI/Plugin name].Api                                                                                                                                                                                                                                                                                                                 | Execution.ShipmentSearch.UI.ApiExecution.ShipmentTracking.Api |
 | Interface                    | Pascal | Name interfaces with nouns or noun phrases, or adjectives that describe behaviour. For example: The interface name IComponent uses a descriptive noun The interface name ICustomAttributeProvider uses a noun phrase The name IPersistable uses an adjective Prefix interface names with the letter I to indicate that the type is an interface.     | IDisposable                                                   |
-| Namespace                    | Pascal |                                                                                                                                                                                                                                                                                                                                                      | System.IO                                                     |
+| Namespace                    | Pascal | Use directories to group the classes and use namespace to reflect parent                                                                                                                                                                                                                                                                             | System.IO                                                     |
 | Plugin/consumer              | Pascal | Use the pattern Execution.[Functionality].Plugin/Consumer Use the suffix Consumer for Kafka Use the suffix Plugin for Enterprise Service Bus (ESB)                                                                                                                                                                                                   | Execution.LoadEvents.Plugin                                   |
 | Public property              | Pascal |                                                                                                                                                                                                                                                                                                                                                      | BackColor                                                     |
 | Public or internal method    | Pascal | Use verbs or verb phrases to name methods                                                                                                                                                                                                                                                                                                            | ToString                                                      |
-| Private or protected method  | Camel  | Use verbs or verb phrases to name methods.                                                                                                                                                                                                                                                                                                           | calculatedValues                                              |
+| Private or protected method  | Pascal | Use verbs or verb phrases to name methods.                                                                                                                                                                                                                                                                                                           | calculatedValues                                              |
 | Read-only Static field       | Pascal |                                                                                                                                                                                                                                                                                                                                                      | RedValue                                                      |
 | UI                           | Pascal | Use pattern Execution.[Functionality].UI                                                                                                                                                                                                                                                                                                             | Execution.ShipmentSearch.UI                                   |
+| Async methods                | Pascal | Use verbs or verb phrases to name methods and append the suffix "Async"                                                                                                                                                                                                                                                                              | AddMessageAsync                                               |
 
 ### 1.3 Case Sensitivity
 
@@ -88,6 +89,8 @@ Member and variable names should be carefully chosen to convey as much informati
 
 - Avoid using numbers in names unless, rather describe how a set of variables differ.
 
+- Avoid naming a variable the same name as the type
+
 When two or more variables of the same type are in use in the same general area, make sure they are named in a way that differentiates them in an informative way.
 
 Bad Practice:
@@ -119,7 +122,7 @@ Follow these rules regarding the use of abbreviations:
 
 - Where appropriate, use well-known acronyms to replace lengthy phrase names. For example, use UI for User Interface and OLAP for On-line Analytical Processing
 
-- When using acronyms, use Pascal case for acronyms more than two characters long. For example, use HtmlButton. However, you should capitalize acronyms that consist of only two characters, such as System.IO instead of System.Io.
+- When using acronyms, use Pascal case for acronyms more than two characters long. For example, use HtmlButton. However, you should capitalize acronyms that consist of only two characters, such as System.IO instead of System.Io. Avoid removing vowels from abbreviations. 
 
 ## 2. Comments and General Style Guidelines
 
@@ -195,6 +198,38 @@ Comment blocks are often used for permanently commenting out blocks of code that
 
 Not every line of code requires a comment. Blocks of code that perform a common task (e.g.: populating an object) can be preceded by a line or two of comments. If a large body of code is simple enough that it doesn’t require any commentary at all, write a short comment before it summarizing its function, separated from the code by a single line of whitespace.
 
+If statements should always use braces, even if there is only a single statement that results from
+
+the condition evaluating to true.
+
+Bad Practice:
+
+```c#
+{
+    if (tmpCustomer.IsNew) tmpCustomer.Save();
+    if (tmpCustomer.IsNew)tmpCustomer.Save();
+}
+```
+
+Good Practice:
+
+```c#
+{
+    if (tmpCustomer.IsNew)
+    {
+        tmpCustomer.Save();
+    }
+}
+```
+
+The exception to this rule is when an obvious shortcut can be taken to return from a method. There should be a single line of whitespace before and after that line:
+
+```c#
+{
+    if (tmpCustomer.IsNew) return;
+}
+```
+
 ### 2.5 Code Blocks
 
 Comments should follow a *narrative* style. The comments should describe the overall flow and logic of the code so that, if a developer were to read only the comments, they would still be able to get a fair idea of the how the code works and its control flow without needing to read the code itself.
@@ -241,9 +276,13 @@ Examples:
 
 ```c#
 {
- // TODO: This works but there must be a more elegant way of doing it!
- ...
- // FIXME: Possible race condition! Issue # 12345
+    // TODO: This works but there must be a more elegant way of doing it!
+}
+```
+
+```c#
+{
+    // FIXME: Possible race condition! Issue # 12345
 }
 ```
 
@@ -305,41 +344,7 @@ However, use this operator carefully. It should only be used when the resulting 
 }
 ```
 
-### 3.3 Use of Braces on If Structures
-
-If statements should always use braces, even if there is only a single statement that results from
-
-the condition evaluating to true.
-
-Bad Practice:
-
-```c#
-{
-    if (tmpCustomer.IsNew) tmpCustomer.Save();
-    if (tmpCustomer.IsNew)tmpCustomer.Save();
-}
-```
-
-Good Practice:
-
-```c#
-{
-    if (tmpCustomer.IsNew)
-    {
-        tmpCustomer.Save();
-    }
-}
-```
-
-The exception to this rule is when an obvious shortcut can be taken to return from a method. There should be a single line of whitespace before and after that line:
-
-```c#
-{
-    if (tmpCustomer.IsNew) return;
-}
-```
-
-### 3.4 Line Wrapping
+### 3.3 Line Wrapping
 
 Break up lines of code that are more than 120 characters in length and indent all subsequent lines that are part of the same statement.
 
@@ -373,7 +378,7 @@ Before a member accessor:
 }
 ```
 
-3.5 Using Parentheses
+### 3.5 Using Parentheses
 
 Use parentheses defensively. to make operator order obvious and to clarify the intent of a calculation.
 
@@ -386,11 +391,11 @@ Use parentheses defensively. to make operator order obvious and to clarify the i
 }
 ```
 
-### 3.6 Variable Definitions
+### 3.4 Variable Definitions
 
 Variables should be defined as close as possible to their actual usage– avoid a large block of definitions at the top of a class or method.
 
-### 3.7 Exception Handling
+### 3.5 Exception Handling
 
 Exceptions should only be thrown in *exceptional* circumstances. Don’t use an exception to return feedback to calling code about the normal operation of method. An exception should only be thrown if a method is unable to complete its work – the exception then indicates that processing failed completely.
 
@@ -402,7 +407,7 @@ The basic rule of exception handling is, generally speaking, don’t handle exce
 
 - The exception has a different meaning outside of the library of class where it occurred. For instance a primary key violation in database code might indicate that a caller is attempting to add an entity that already exists in the database
 
-### 3.8 Property Guidelines
+### 3.6 Property Guidelines
 
 Use a method instead of a property when:
 
@@ -418,7 +423,7 @@ code to retrieve the next N bytes from a stream should be accessed through a met
 
 has an observable side effect (i.e.: the position of the reader in the stream is updated).
 
-### 3.9 Constructors
+### 3.7 Constructors
 
 Some rules for constructors:
 
@@ -438,11 +443,11 @@ Some rules for constructors:
 
 - For classes with overloaded constructors, be consistent with the argument order
 
-### 3.10 Returning Arrays and Collections
+### 3.8 Returning Arrays and Collections
 
 Members that return arrays or collections should (generally) never return null. Always prefer to return an empty collection or zero-length array, unless a null result has some special significance.
 
-### 3.11 Code for Clarity, Not Compactness
+### 3.9 Code for Clarity, Not Compactness
 
 Developers should place an emphasis on readability. Code should be readable and should favor clarity over compactness. Avoid excessive use of syntactical ‘tricks’ or short-hand.
 
@@ -481,13 +486,15 @@ Good Practice:
 }
 ```
 
-### 3.12 Avoid Excessive Vertical Whitespace
+### 3.10 Avoid Excessive Vertical Whitespace
 
 Although these style guidelines make frequent recommendations to use vertical whitespace, two
 
 blank lines should never appear consecutively in a source file.
 
-### 3.13 Using Regions
+It is recommended to include a single blank line at the start of a class.
+
+### 3.11 Using Regions
 
 Use code outlining to group the code in your source file in logical units that can be collapsed or
 
@@ -513,7 +520,7 @@ Structure your outlined regions so that, when closed, they are separated by a si
 
 {Insert code snippet}
 
-### 3.15 Removing Unused Code
+### 3.12 Removing Unused Code
 
 Unreachable or unused code should be removed, unless there is a clear requirement for it to be
 
