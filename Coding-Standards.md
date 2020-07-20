@@ -1,15 +1,15 @@
-# Development Guide
+# Coding Standards
 
 Table of Contents
 
-- [1. Naming Conventions](##-1.-Naming-Conventions)
-- [2. Comments and General Style Guidelines](##-2.-Comments-and-General-Style-Guidelines)
-- [3. Coding Standards and Practices](##3.-Coding-Standards-and-Practices)
-- [4. Testing](##-4.-Testing)
-- [5. Pull Requests](##-5.-Pull-Requests)
-- [6. Databases](##-6.-Databases)
-- [7. APIs](##-7.-APIs)
-- [8. Plugins and Consumers](##8.-Plugins-and-Consumers)
+- [1. Naming Conventions](#1-naming-conventions)
+- [2. Comments and General Style Guidelines](#2-comments-and-general-style-guidelines)
+- [3. General Standards and Practices](#3-coding-standards-and-practices)
+- [4. Testing](#4-testing)
+- [5. Pull Requests](#5-pull-requests)
+- [6. Databases](#6-databases)
+- [7. APIs](#7-apis)
+- [8. Plugins and Consumers](#8-plugins-and-consumers)
 
 ## 1. Naming Conventions
 
