@@ -1,9 +1,15 @@
 # Development Guide
 
 Table of Contents
-- [Naming Conventions]()
-- [Comments and General Style Guidelines]()
-- [Coding Standards and Practices]()
+
+- [1. Naming Conventions](##-1.-Naming-Conventions)
+- [2. Comments and General Style Guidelines](##-2.-Comments-and-General-Style-Guidelines)
+- [3. Coding Standards and Practices](##3.-Coding-Standards-and-Practices)
+- [4. Testing](##-4.-Testing)
+- [5. Pull Requests](##-5.-Pull-Requests)
+- [6. Databases](##-6.-Databases)
+- [7. APIs](##-7.-APIs)
+- [8. Plugins and Consumers](##8.-Plugins-and-Consumers)
 
 ## 1. Naming Conventions
 
@@ -528,41 +534,80 @@ used in the near future. Do not comment out large blocks of code when they are n
 
 required—instead, delete the unused code.
 
-### X.X Single responsibility principle
+## 4. Testing
 
-methods (and classes) should do ONE thing. Generally, try to avoid:
+- **All major test cases should be implemented as unit and/or AATs** -- make sure to test both happy and unhappy code paths. Tests are the only way you have to ensure that your code continues to work in prod after you're done with your project!
+- Naming: class name + method name should read like a sentence
+  - Class: `[Name of class under test]Should` (ex., ConfigurationRepositoryShould)
+  - Methods: `[What_the_method_is_testing]` (ex., Get_connectionString_from_config)
 
-- More than 1-2 levels of nesting (if/else/switch/loops)
+## 5. Pull Requests
 
-- Too many parameters on methods (we prefer &lt;= 2 parameters)
+- Ensure your code is not introducing new criticals or blockers 
+- Ensure code complexity for functions is < 10 for your code 
+- Ensure code duplication did not go up
+- Ensure maintainability rating did not go up
+- Ensure everything added to .config got added to .token file, as well 
+- Ensure new tokens are in Octopus Deploy prior to submitting the PR for review
+- First level of approval needs to be done by the Execution Advocates on your team (if you have any) or another developer on your team (if you don't)
+- Once the PR has been approved by Advocate/developer, assign the PR to the `Execution-Gatekeepers` team
+- **SLA for reviews is 2 days** after the PR has been marked as ready for the Execution team
 
-- Duplicated code and/or logic (avoid!)
+## 6. Databases
 
-- Large methods (strongly prefer &lt;= 30 lines; methods should be small ... they should be smaller than that)
+- All (new) database objects related to a DevOps product should be in a schema specific to that product
+- Naming conventions 
+  - Tables: plural (ex., Loads not Load)
+  - Stored procedures: `[TableName (singular)]_[Action]` (ex., Load_Get or Load_GetByEmployee)
+- UDTs: only use them for simple structures (1-2 columns)
+- Avoid business logic in stored procedures 
 
-- Names (of methods, classes, etc.) that don't give you an indication of what they are doing (usually because they are doing too many things)
+## 7. APIs
 
-- Anytime you need to generate date/times (ex., EnteredDateTime), do it in the business tier rather than in the database (ex., SQL or Mongo)
+### 7.1 Routes: Name and Operation Conventions
 
-### X.X Notable Pitfalls
+| Resource            | GET                                                                                                                                   | POST                  | PUT                                                                  | DELETE                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------- |
+| /customers          | Retrieve all customers                                                                                                                | Create a new customer | Bulk update of customers (if implemented), otherwise return 404      | Remove all customers (if implemented) otherwise return 404 |
+| /customers/1        | Retrieve the details for customer with ID 1.  If customer doesn’t exist, return 404.                                                  | Return 404            | Update the details of customer 1 if it exists, otherwise return 404. | Remove customer 1.  If customer doesn’t exist, return 404. |
+| /customers/1/orders | Retrieve all orders for customer 1.  If customer doesn’t exist, return 404. If customer doesn’t have orders, then return empty array. | Return 404            | Return 404                                                           | Return 404                                                 |
 
-Avoid the following pitfalls when coding:
+### 7.2  Filtering/Sorting/Paging
 
-- Avoid magic strings and numbers (use constants)
+| Resource                                      | GET                                                                                            | POST       | PUT        | DELETE     |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------- | ---------- | ---------- |
+| /customers?firstName=Bob                      | Retrieve all customers with a first name of ‘Bob’.                                             | Return 404 | Return 404 | Return 404 |
+| /customers?**sortBy**=firstName,desc;lastName | Retrieve all customers with ascending sort by first name.                                      | Return 404 | Return 404 | Return 404 |
+| /customers?**pageSize**=25&**pageIndex**=5    | Retrieve 25 objects, offset by 5 pages of data.  So we’d be returning objects 101 through 125. | Return 404 | Return 404 | Return 404 |
 
-- Avoid unnecessary code (using statements, functions, comments that state the obvious)
+## 7.3  Routes: Guidelines
 
-- Avoid complicated code (prefer understandable to clear code -- ex., foreach instead of a complex LINQ statement)
+- All routes should be nouns (objects) and not verbs (actions).
+- Routes should be plural
+- Routes should be "hackable" - meaning that you should be able to delete part of the route and get back objects you would expect.  (ex.,  if you have route ```/employees/2343/shipments/11992```, you would expect that you could get back the object for employee with ID of 2343 if you delete off the "shipments" part of this route)
+- Following a given resource (e.g. "orders", "shipments", etc.), the next piece of the route should be the unique ID for *individual* objects.
+  
+   | Bad Routes              | Proper Routes                                                  |
+   | ----------------------- | -------------------------------------------------------------- |
+   | ``` /getcustomers ```   | ``` /customers ```                                             |
+   | ``` /updatecustomer ``` | ``` /customers ``` [Perform PUT]                               |
+   | ``` /order ```          | ``` /orders ```                                                |
+   | ``` /employeebyname ``` | ``` /employees?firstName=bob ```                               |
+   | ``` /convert2pdf ```    | ``` /documentConversions ``` [Send POST to perform the action] |
 
-- Avoid if/else if/else/switch if at all possible (consider dictionaries unless they make code harder to understand)
+- For pagination, we will use `pageSize` and `pageIndex` keywords.
+- For filtering:
+  - Just use the name of the field (e.g. “firstname”).  Do not add “filter” to the query string key name.
+  - If you have exceptional cases where your filtering criteria are complex and/or larger amounts of data, instead of using the GET method and query strings, you may use POST while placing filter criteria in the body of the request.
+- For sorting:
+  - Use `sortBy` for keyword, set to the name of the field to search by.
+  - If the user wants to specify ascending or descending order, they will add a comma after the field name that they are sorting by, and then specifying “desc” if they want descending, and put nothing if they want ascending (e.g. ascending will be the default convention when nothing is specified).
+- Put all route definitions in a Routes.cs file within the <Api>.ServiceModel project.
+  - This will help anyone to very quickly review the route design for a given API.
+  - This will also help enforce consistency among the routes by putting them all right next to each other.
+  - [See example here](https://github.chrobinson.com/GlobalForwarding/GF.Alerts.API/blob/development/src/GF.Alerts.API.ServiceModel/Messages/Routes.cs).
 
-- Avoid Thread.Sleep in AATs (DevOps enforces timeouts at both test & AAT project level + they make deployments longer)
+### 8 Plugins and Consumers
 
-The Developer will know they are complete with this task when they have:
-
-``` c#
-{
- This code block sets customer data
- This code block saves the customer data
-}
-```
+- Should not contain business logic
+- Should pass through to gateway services (i.e., all plugins and consumers should have a gateway service that contains the logic needed to perform the functionality; they shouldn't call back-end services directly)
